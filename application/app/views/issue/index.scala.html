@@ -1,0 +1,44 @@
+@import model.issue.Issue
+
+@(issues: List[Issue])
+
+@main("List of Issues") {
+  <div style="margin-top: 50px">
+    <div class="row">
+      <div class="col-sm-6">
+        <h3>List of Issues</h3>
+      </div>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-hover table-bordered">
+        <thead id="table-header">
+          <tr>
+            <td>No</td>
+            <td>Content</td>
+            <td>Action</td>
+            <td>Assignee</td>
+            <td>Status</td>
+            <td>Deadline</td>
+          </tr>
+        </thead>
+        <tbody>
+          @for(index <- 0 to issues.length - 1) {
+            <tr id="@issues(index).id">
+              <td>@(index + 1)</td>
+              <td>@issues(index).content</td>
+              <td>@issues(index).action</td>
+              <td>@issues(index).assignee</td>
+              <td>@issues(index).status.status</td>
+              <td>@issues(index).deadline</td>
+            </tr>
+          }
+          @if(issues.length == 0) {
+            <tr>
+              <td colspan="6">No issue</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+}

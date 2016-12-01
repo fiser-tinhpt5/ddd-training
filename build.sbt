@@ -3,7 +3,9 @@ import com.typesafe.sbt.SbtScalariform
 import com.typesafe.sbt.SbtScalariform.ScalariformKeys
 import sbt.Keys._
 
-lazy val scalikejdbcVersion = "2.4.2"
+lazy val scalikejdbcVersion = "2.5.0"
+
+lazy val scalikePlayVersion = "2.5.1"
 
 lazy val spec2Version = "3.8.5"
 
@@ -18,6 +20,7 @@ lazy val commonSettings = Seq(
   version := "1.0",
   scalaVersion := "2.11.7",
   libraryDependencies ++= Seq(
+    specs2 % Test,
     "org.specs2" %% "specs2-core" % spec2Version % "test"
   )
 )
@@ -55,8 +58,8 @@ lazy val domain = (project in file("domain"))
     name += ".domain",
     scalaSource in Compile := baseDirectory.value / "src" / "main" / "scala",
     scalaSource in Test := baseDirectory.value / "src" / "test" / "scala",
-    resourceDirectory in Compile := baseDirectory.value / "src" / "main" / "resoucre",
-    resourceDirectory in Test := baseDirectory.value / "src" / "test" / "resoucre"
+    resourceDirectory in Compile := baseDirectory.value / "src" / "main" / "resources",
+    resourceDirectory in Test := baseDirectory.value / "src" / "test" / "resources"
   )
 
 lazy val infrastructure = (project in file("infrastructure"))
@@ -67,13 +70,15 @@ lazy val infrastructure = (project in file("infrastructure"))
     libraryDependencies ++= Seq(
       "org.scalikejdbc" %% "scalikejdbc"       % scalikejdbcVersion,
       "org.scalikejdbc" %% "scalikejdbc-test"   % scalikejdbcVersion   % "test",
+      "org.scalikejdbc" %% "scalikejdbc-config"  % scalikejdbcVersion,
+      "org.scalikejdbc" %% "scalikejdbc-play-initializer" % scalikePlayVersion,
       "mysql" % "mysql-connector-java" % mysqlConnectorVersion,
       "org.skinny-framework" %% "skinny-orm"      % skinnyORMVersion
     ),
     scalaSource in Compile := baseDirectory.value / "src" / "main" / "scala",
     scalaSource in Test := baseDirectory.value / "src" / "test" / "scala",
-    resourceDirectory in Compile := baseDirectory.value / "src" / "main" / "resoucre",
-    resourceDirectory in Test := baseDirectory.value / "src" / "test" / "resoucre"
+    resourceDirectory in Compile := baseDirectory.value / "src" / "main" / "resources",
+    resourceDirectory in Test := baseDirectory.value / "src" / "test" / "resources"
   )
 
 
@@ -87,3 +92,7 @@ ScalariformKeys.preferences := ScalariformKeys.preferences.value
   .setPreference(AlignSingleLineCaseStatements, true)
   .setPreference(DoubleIndentClassDeclaration, true)
   .setPreference(PreserveDanglingCloseParenthesis, true)
+  .setPreference(AlignArguments, true)
+  .setPreference(AlignParameters, true)
+  .setPreference(AlignSingleLineCaseStatements, true)
+  .setPreference(IndentSpaces, 2)

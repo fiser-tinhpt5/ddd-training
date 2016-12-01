@@ -1,0 +1,15 @@
+#header {
+    background-color: #4cae4c;
+}
+
+#header a {
+    color: #000000;
+    text-decoration: none;
+}
+#login-form {
+    text-align: center;
+}
+
+#table-header {
+    background-color: #adadad;
+}
