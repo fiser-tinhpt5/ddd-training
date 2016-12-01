@@ -21,7 +21,7 @@ class IssueRepositorySpec extends PlaySpecification with Mockito {
   "IssueRepository" should {
     "resolveAll" should {
       "return issue list" in {
-        mockIssueDAO.resolveAll returns Success(List(dummyIssueRecord))
+        mockIssueDAO.resolveAll returns Success(Seq(dummyIssueRecord))
         val issues = issueRepositoryWithMock(mockIssueDAO).resolveAll.get
 
         issues must haveSize(1)
@@ -31,7 +31,7 @@ class IssueRepositorySpec extends PlaySpecification with Mockito {
       }
 
       "return empty list if there is no issue" in {
-        mockIssueDAO.resolveAll returns Success(List())
+        mockIssueDAO.resolveAll returns Success(Seq())
         val issues = issueRepositoryWithMock(mockIssueDAO).resolveAll.get
 
         issues must haveSize(0)

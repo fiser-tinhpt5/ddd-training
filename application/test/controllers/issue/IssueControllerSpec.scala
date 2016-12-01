@@ -24,7 +24,7 @@ class IssueControllerSpec extends PlaySpecification with Mockito {
   "IssueController" should {
     "list" should {
       "return issue list" in new WithApplication() {
-        mockIssueRepository.resolveAll returns Success(List(dummyIssue))
+        mockIssueRepository.resolveAll returns Success(Seq(dummyIssue))
         val apiResult = call(
           issueControllerWithMock(mockIssueRepository).list,
           FakeRequest(GET, "/")
@@ -35,7 +35,7 @@ class IssueControllerSpec extends PlaySpecification with Mockito {
       }
 
       "dont return issue list if there is no issue" in new WithApplication() {
-        mockIssueRepository.resolveAll returns Success(List())
+        mockIssueRepository.resolveAll returns Success(Seq())
         val apiResult = call(
           issueControllerWithMock(mockIssueRepository).list,
           FakeRequest(GET, "/")

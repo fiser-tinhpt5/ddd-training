@@ -9,5 +9,5 @@ import scala.util.Try
  */
 
 class IssueDAO {
-  def resolveAll(implicit session: DBSession = AutoSession): Try[List[IssueRecord]] = Try { IssueRecord.findAll() }
+  def resolveAll(implicit session: DBSession = AutoSession): Try[Seq[IssueRecord]] = Try { IssueRecord.findAll() }
 }

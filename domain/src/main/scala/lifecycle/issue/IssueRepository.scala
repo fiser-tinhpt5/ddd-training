@@ -13,7 +13,7 @@ import scala.util.Try
  */
 class IssueRepository @Inject() (issueDAO: IssueDAO) {
 
-  def resolveAll: Try[List[Issue]] = Try {
+  def resolveAll: Try[Seq[Issue]] = Try {
     issueDAO.resolveAll.get.map(record => record2Entity(record))
   }
 
