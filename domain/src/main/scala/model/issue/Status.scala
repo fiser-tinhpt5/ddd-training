@@ -14,10 +14,10 @@ object Status {
 
   def fromString(str: String): Try[Status] = Try {
     str match {
-      case "PENDING" => PENDING
-      case "RESOLVED" => RESOLVED
+      case "PENDING"   => PENDING
+      case "RESOLVED"  => RESOLVED
       case "CANCELLED" => CANCELLED
-      case _ => throw new IllegalArgumentException(s"${str} is not defined as Status")
+      case _           => throw new IllegalArgumentException(s"${str} is not defined as Status")
     }
   }
 }

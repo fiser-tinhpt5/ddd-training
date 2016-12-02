@@ -17,6 +17,14 @@ class IssueRepository @Inject() (issueDAO: IssueDAO) {
     issueDAO.resolveAll.get.map(record => record2Entity(record))
   }
 
+  def resolveById(id: IssueID): Try[Issue] = Try {
+    record2Entity(issueDAO.resolveById(id.id).get)
+  }
+
+  def update(issue: Issue): Try[Int] = Try {
+    issueDAO.update(entity2Record(issue)).get
+  }
+
   private def entity2Record(issue: Issue): IssueRecord =
     IssueRecord(
       issue.id.id,

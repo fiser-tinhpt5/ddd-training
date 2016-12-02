@@ -10,7 +10,7 @@ import skinny.orm._
  */
 case class IssueRecord(id: Long, content: String, action: String, assignee: String, status: String, deadline: Date)
 
-object IssueRecord extends SkinnyMapper[IssueRecord] {
+object IssueRecord extends SkinnyCRUDMapper[IssueRecord] {
   override lazy val defaultAlias = createAlias("i")
   override val tableName = "issues"
 

@@ -1,6 +1,5 @@
 import scalariform.formatter.preferences._
-import com.typesafe.sbt.SbtScalariform
-import com.typesafe.sbt.SbtScalariform.ScalariformKeys
+import com.typesafe.sbt.SbtScalariform.ScalariformKeys._
 import sbt.Keys._
 
 lazy val scalikejdbcVersion = "2.5.0"
@@ -23,7 +22,7 @@ lazy val commonSettings = Seq(
     specs2 % Test,
     "org.specs2" %% "specs2-core" % spec2Version % "test"
   )
-)
+) ++ scalariformMySettings
 
 lazy val `ddd_training` = (project in file("."))
   .enablePlugins(PlayScala)
@@ -86,13 +85,25 @@ unmanagedResourceDirectories in Test <+=  baseDirectory ( _ /"target/web/public/
 
 resolvers += "scalaz-bintray" at "https://dl.bintray.com/scalaz/releases"
 
-SbtScalariform.scalariformSettings
-
-ScalariformKeys.preferences := ScalariformKeys.preferences.value
-  .setPreference(AlignSingleLineCaseStatements, true)
-  .setPreference(DoubleIndentClassDeclaration, true)
-  .setPreference(PreserveDanglingCloseParenthesis, true)
-  .setPreference(AlignArguments, true)
-  .setPreference(AlignParameters, true)
-  .setPreference(AlignSingleLineCaseStatements, true)
-  .setPreference(IndentSpaces, 2)
+lazy val scalariformMySettings = scalariformSettings ++ Seq(
+  preferences := preferences.value
+    .setPreference(AlignParameters, true)
+    .setPreference(AlignSingleLineCaseStatements, true)
+    .setPreference(AlignSingleLineCaseStatements.MaxArrowIndent, 40)
+    .setPreference(CompactControlReadability, false)
+    .setPreference(CompactStringConcatenation, false)
+    .setPreference(DoubleIndentClassDeclaration, true)
+    .setPreference(FormatXml, true)
+    .setPreference(IndentLocalDefs, false)
+    .setPreference(IndentPackageBlocks, true)
+    .setPreference(IndentSpaces, 2)
+    .setPreference(IndentWithTabs, false)
+    .setPreference(MultilineScaladocCommentsStartOnFirstLine, false)
+    .setPreference(PlaceScaladocAsterisksBeneathSecondAsterisk, false)
+    .setPreference(PreserveSpaceBeforeArguments, false)
+    .setPreference(RewriteArrowSymbols, false)
+    .setPreference(SpaceBeforeColon, false)
+    .setPreference(SpaceInsideBrackets, false)
+    .setPreference(SpaceInsideParentheses, false)
+    .setPreference(SpacesWithinPatternBinders, true)
+)

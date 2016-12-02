@@ -23,7 +23,7 @@
         </thead>
         <tbody>
           @for(index <- 0 to issues.length - 1) {
-            <tr id="@issues(index).id">
+            <tr id="@issues(index).id.id" onclick="viewIssueDetail(@issues(index).id.id)">
               <td>@(index + 1)</td>
               <td>@issues(index).content</td>
               <td>@issues(index).action</td>
