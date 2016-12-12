@@ -5,28 +5,23 @@ import java.text.SimpleDateFormat
 import model.issue.{ Issue, IssueID, Status }
 
 /**
- * Created by septechuser on 01/12/2016.
+ * Created by septechuser on 08/12/2016.
  */
-case class IssueForm(id: Long, content: String, action: String, assignee: String, status: String, deadline: String)
+case class IssueForm(content: String, action: String, assignee: String, deadline: String)
 
 object IssueForm {
+
+  val defaultStatus = Status.PENDING
+  val defaultID = IssueID(0)
   val sdf = new SimpleDateFormat("dd/MM/yyyy")
 
   def fromFormValue(issueForm: IssueForm): Issue = Issue(
-    IssueID(issueForm.id),
+    defaultID,
     issueForm.content,
     issueForm.action,
-    Status.fromString(issueForm.status).get,
+    defaultStatus,
     issueForm.assignee,
     sdf.parse(issueForm.deadline)
   )
 
-  def toFormValue(issue: Issue): IssueForm = IssueForm(
-    issue.id.id,
-    issue.content,
-    issue.action,
-    issue.assignee,
-    issue.status.status,
-    sdf.format(issue.deadline)
-  )
 }

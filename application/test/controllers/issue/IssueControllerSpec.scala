@@ -1,14 +1,14 @@
 package controllers.issue
 
-import java.text.SimpleDateFormat
-import java.util.{ Date, UUID }
+import java.util.Date
 
 import exception.EntityNotFound
-import issue.IssueRecord
 import lifecycle.issue.IssueRepository
 import model.issue.{ Issue, IssueID, Status }
 import org.specs2.mock.Mockito
+import play.api.i18n.MessagesApi
 import play.api.test.{ FakeRequest, PlaySpecification, WithApplication }
+import scalikejdbc.DBSession
 
 import scala.util.{ Failure, Success }
 
@@ -18,10 +18,9 @@ import scala.util.{ Failure, Success }
 class IssueControllerSpec extends PlaySpecification with Mockito {
 
   val mockIssueRepository = mock[IssueRepository]
+  val mockMessageApi = mock[MessagesApi]
 
-  val sdf = new SimpleDateFormat("dd/MM/yyyy")
-
-  def issueControllerWithMock(mockIssueRepository: IssueRepository) = new IssueController(mockIssueRepository)
+  def issueControllerWithMock(mockIssueRepository: IssueRepository, mockMessageApi: MessagesApi) = new IssueController(mockIssueRepository, mockMessageApi)
 
   val dummyIssue = Issue(IssueID(1L), "ddd is difficult", "learn more", Status.PENDING, "tinh_pt", new Date())
 
@@ -30,7 +29,7 @@ class IssueControllerSpec extends PlaySpecification with Mockito {
       "return issue list" in new WithApplication() {
         mockIssueRepository.resolveAll returns Success(Seq(dummyIssue))
         val apiResult = call(
-          issueControllerWithMock(mockIssueRepository).list,
+          issueControllerWithMock(mockIssueRepository, mockMessageApi).list,
           FakeRequest(GET, "/")
         )
 
@@ -41,7 +40,7 @@ class IssueControllerSpec extends PlaySpecification with Mockito {
       "dont return issue list if there is no issue" in new WithApplication() {
         mockIssueRepository.resolveAll returns Success(Seq())
         val apiResult = call(
-          issueControllerWithMock(mockIssueRepository).list,
+          issueControllerWithMock(mockIssueRepository, mockMessageApi).list,
           FakeRequest(GET, "/")
         )
 
@@ -52,7 +51,7 @@ class IssueControllerSpec extends PlaySpecification with Mockito {
       "throw an exception if has error when retrieving issue list" in new WithApplication() {
         mockIssueRepository.resolveAll returns Failure(new Exception)
         val apiResult = call(
-          issueControllerWithMock(mockIssueRepository).list,
+          issueControllerWithMock(mockIssueRepository, mockMessageApi).list,
           FakeRequest(GET, "/")
         )
 
@@ -60,67 +59,102 @@ class IssueControllerSpec extends PlaySpecification with Mockito {
       }
     }
 
-    "resolveById" should {
-      "show issue detail in form" in new WithApplication() {
-        mockIssueRepository.resolveById(IssueID(1L)) returns Success(dummyIssue)
+    "update" should {
+      "success and return status code 200 if everything is ok" in new WithApplication() {
+        val newIssue = dummyIssue.updateStatus(Status.RESOLVED)
+        mockIssueRepository.resolveById(IssueID(1)) returns Success(dummyIssue)
+        mockIssueRepository.update(newIssue) returns Success(newIssue)
+
         val apiResult = call(
-          issueControllerWithMock(mockIssueRepository).resolveById(1L),
-          FakeRequest(GET, "/issues/" + 1)
+          issueControllerWithMock(mockIssueRepository, mockMessageApi).updateStatus(1L),
+          FakeRequest("PUT", "/issues/" + 1)
+            .withFormUrlEncodedBody(
+              "status" -> "RESOLVED"
+            )
         )
 
-        status(apiResult) mustEqual OK
-        contentAsString(apiResult) must contain("ddd is difficult")
+        status(apiResult) mustEqual 200
       }
 
-      "throw exception if issue not found" in new WithApplication() {
-        mockIssueRepository.resolveById(IssueID(2L)) returns Failure(new EntityNotFound("Issue not found"))
+      "throw an exception if not found issue or update fail" in new WithApplication() {
+        val newIssue = dummyIssue.updateStatus(Status.RESOLVED)
+        mockIssueRepository.resolveById(IssueID(1)) returns Failure(new EntityNotFound("Issue not found"))
+        mockIssueRepository.update(newIssue) returns Failure(new Throwable)
+
         val apiResult = call(
-          issueControllerWithMock(mockIssueRepository).resolveById(2L),
-          FakeRequest(GET, "/issues/" + 2)
+          issueControllerWithMock(mockIssueRepository, mockMessageApi).updateStatus(1L),
+          FakeRequest("PUT", "/issues/" + 1)
+            .withFormUrlEncodedBody(
+              "status" -> "RESOLVED"
+            )
         )
 
         status(apiResult) must throwAn[Exception]
       }
+    }
 
-      "update" should {
-        "success and redirect to issue list if everything is ok" in new WithApplication() {
-          mockIssueRepository.resolveById(IssueID(1L)) returns Success(dummyIssue)
-          mockIssueRepository.update(any[Issue]) returns Success(1)
+    "form" should {
+      "redirect to create new issue form" in new WithApplication() {
+        val apiResult = call(
+          issueControllerWithMock(mockIssueRepository, mockMessageApi).form,
+          FakeRequest("GET", "/issues")
+        )
 
-          val apiResult = call(
-            issueControllerWithMock(mockIssueRepository).update(1L),
-            FakeRequest(PUT, "/issues/" + 1)
-              .withFormUrlEncodedBody(
-                "id" -> "1",
-                "content" -> dummyIssue.content,
-                "action" -> dummyIssue.action,
-                "assignee" -> dummyIssue.assignee,
-                "deadline" -> sdf.format(dummyIssue.deadline),
-                "status" -> dummyIssue.status.status
-              )
-          )
+        status(apiResult) mustEqual OK
+        contentAsString(apiResult).toLowerCase must contain("create new issue")
+      }
+    }
 
-          status(apiResult) mustEqual 303
-        }
+    "add" should {
+      "success and redirect to issue list when everything is ok" in new WithApplication() {
+        mockIssueRepository.add(any[Issue]) returns Success(dummyIssue)
 
-        "throw exception if update fail" in new WithApplication() {
-          mockIssueRepository.update(any[Issue]) returns Failure(new Exception)
-          val apiResult = call(
-            issueControllerWithMock(mockIssueRepository).update(1L),
-            FakeRequest(PUT, "/issues/" + 1)
-              .withFormUrlEncodedBody(
-                "id" -> "1",
-                "content" -> dummyIssue.content,
-                "action" -> dummyIssue.action,
-                "assignee" -> dummyIssue.assignee,
-                "deadline" -> sdf.format(dummyIssue.deadline),
-                "status" -> dummyIssue.status.status
-              )
-          )
+        val apiResult = call(
+          issueControllerWithMock(mockIssueRepository, mockMessageApi).add,
+          FakeRequest("POST", "/issues")
+            .withFormUrlEncodedBody(
+              "content" -> dummyIssue.content,
+              "action" -> dummyIssue.action,
+              "assignee" -> dummyIssue.assignee,
+              "deadline" -> "08/12/2016"
+            )
+        )
 
-          status(apiResult) must throwAn[Exception]
+        status(apiResult) mustEqual 303
+        flash(apiResult).get("create_success").get mustEqual ("Create new issue successfully")
+      }
 
-        }
+      "return status 400 if form error" in new WithApplication() {
+        mockIssueRepository.add(any[Issue]) returns Failure(new Exception)
+
+        val apiResult = call(
+          issueControllerWithMock(mockIssueRepository, mockMessageApi).add,
+          FakeRequest("POST", "/issues")
+            .withFormUrlEncodedBody(
+              "content" -> dummyIssue.content,
+              "action" -> dummyIssue.action,
+              "assignee" -> dummyIssue.assignee
+            )
+        )
+
+        status(apiResult) mustEqual 400
+      }
+
+      "throw an exception if add fail" in new WithApplication() {
+        mockIssueRepository.add(any[Issue]) returns Failure(new Exception)
+
+        val apiResult = call(
+          issueControllerWithMock(mockIssueRepository, mockMessageApi).add,
+          FakeRequest("POST", "/issues")
+            .withFormUrlEncodedBody(
+              "content" -> dummyIssue.content,
+              "action" -> dummyIssue.action,
+              "assignee" -> dummyIssue.assignee,
+              "deadline" -> "08/12/2016"
+            )
+        )
+
+        status(apiResult) must throwAn[Exception]
       }
     }
   }

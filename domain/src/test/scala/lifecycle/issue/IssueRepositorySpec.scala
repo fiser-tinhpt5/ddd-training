@@ -48,36 +48,58 @@ class IssueRepositorySpec extends PlaySpecification with Mockito {
         issue.content mustEqual ("ddd is difficult")
         issue.action mustEqual ("learn more")
         issue.assignee mustEqual ("tinh_pt")
-        issue.status.status mustEqual ("PENDING")
       }
 
-      "throw EntityNotFound if issue is not found" in {
-        mockIssueDAO.resolveById(1) returns Failure(new EntityNotFound(("Issue not found")))
+      "throw an exception if issue not found" in {
+        mockIssueDAO.resolveById(1) returns Failure(new EntityNotFound("Issue not found"))
         val issue = issueRepositoryWithMock(mockIssueDAO).resolveById(IssueID(1))
 
-        issue must beFailedTry[Issue]
+        issue.get must throwAn[Exception]
       }
     }
 
     "update" should {
-      "return 1 if update success" in {
+      "return updated issue if update success" in {
         val updatedIssueRecord = IssueRecord(1L, "ddd is difficult", "learn more", "tinh_pt", "RESOLVED", new Date())
         val updatedIssue = Issue(IssueID(1L), "ddd is difficult", "learn more", Status.RESOLVED, "tinh_pt", new Date())
-        mockIssueDAO.update(updatedIssueRecord) returns Success(1)
+        mockIssueDAO.update(updatedIssueRecord) returns Success(updatedIssueRecord)
+        val issue = issueRepositoryWithMock(mockIssueDAO).update(updatedIssue).get
 
-        val updateOK = issueRepositoryWithMock(mockIssueDAO).update(updatedIssue).get
-
-        updateOK mustEqual (1)
+        issue.status mustEqual (Status.RESOLVED)
       }
 
-      "return 0 if entity not found and update fail" in {
+      "throw exception if update fail or cant return updated issue" in {
         val updatedIssueRecord = IssueRecord(1L, "ddd is difficult", "learn more", "tinh_pt", "RESOLVED", new Date())
         val updatedIssue = Issue(IssueID(1L), "ddd is difficult", "learn more", Status.RESOLVED, "tinh_pt", new Date())
-        mockIssueDAO.update(updatedIssueRecord) returns Success(0)
+        mockIssueDAO.update(updatedIssueRecord) returns Failure(new Exception)
+        val issue = issueRepositoryWithMock(mockIssueDAO).update(updatedIssue)
 
-        val updateOK = issueRepositoryWithMock(mockIssueDAO).update(updatedIssue).get
+        issue.get must throwAn[Exception]
+      }
+    }
 
-        updateOK mustEqual (0)
+    "add" should {
+      "return new issue if success" in {
+        val newIssueRecord = IssueRecord(1L, "ddd is difficult", "learn more", "tinh_pt", "RESOLVED", new Date())
+        val dummyIssue = Issue(IssueID(1L), "ddd is difficult", "learn more", Status.RESOLVED, "tinh_pt", new Date())
+        mockIssueDAO.add(newIssueRecord) returns Success(newIssueRecord)
+
+        val newIssue = issueRepositoryWithMock(mockIssueDAO).add(dummyIssue).get
+
+        newIssue.content mustEqual ("ddd is difficult")
+        newIssue.action mustEqual ("learn more")
+        newIssue.status mustEqual (Status.RESOLVED)
+        newIssue.assignee mustEqual ("tinh_pt")
+      }
+
+      "throw exception if add fail" in {
+        val newIssueRecord = IssueRecord(1L, "ddd is difficult", "learn more", "tinh_pt", "RESOLVED", new Date())
+        val dummyIssue = Issue(IssueID(1L), "ddd is difficult", "learn more", Status.RESOLVED, "tinh_pt", new Date())
+
+        mockIssueDAO.add(newIssueRecord) returns Failure(new Exception)
+        val newIssue = issueRepositoryWithMock(mockIssueDAO).add(dummyIssue)
+
+        newIssue.get must throwAn[Exception]
       }
     }
   }

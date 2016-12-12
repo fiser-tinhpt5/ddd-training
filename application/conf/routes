@@ -2,6 +2,8 @@ GET     /assets/*file               controllers.Assets.at(path="/public", file)
 
 GET     /                           controllers.issue.IssueController.list
 
-GET     /issues/:id                 controllers.issue.IssueController.resolveById(id: Long)
+PUT     /issues/:id                 controllers.issue.IssueController.updateStatus(id: Long)
 
-PUT     /issues/:id                 controllers.issue.IssueController.update(id: Long)
+GET     /issues                     controllers.issue.IssueController.form
+
+POST    /issues                     controllers.issue.IssueController.add

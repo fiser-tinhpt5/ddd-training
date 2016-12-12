@@ -52,17 +52,36 @@ class IssueDAOSpec extends PlaySpecification {
     }
 
     "update" should {
-      "return 1 if update success" in new AutoRollbackWithFixture {
-        val dummyIssueRecord = IssueRecord(1, "ddd is difficult", "learn more", "RESOLVED", "tinh_pt", new Date())
-        issueDAO.update(dummyIssueRecord).get mustEqual (1)
+      "return issue record with changed status if update success" in new AutoRollbackWithFixture {
+        val dummyIssueRecord = IssueRecord(1, "ddd is difficult", "learn more", "tinh_pt", "RESOLVED", new Date())
+        val updatedIssueRecord = issueDAO.update(dummyIssueRecord).get
+
+        updatedIssueRecord.id mustEqual 1
+        updatedIssueRecord.status mustEqual ("RESOLVED")
+        updatedIssueRecord.content mustEqual ("ddd is difficult")
+        updatedIssueRecord.action mustEqual ("learn more")
+        updatedIssueRecord.assignee mustEqual ("tinh_pt")
       }
 
-      "return 0 if update fail" in new AutoRollback {
-        val dummyIssueRecord = IssueRecord(1, "ddd is difficult", "learn more", "RESOLVED", "tinh_pt", new Date())
-        issueDAO.update(dummyIssueRecord).get mustEqual (0)
+      "return failure if update fail or cant return issue record" in new AutoRollback {
+        val dummyIssueRecord = IssueRecord(1, "ddd is difficult", "learn more", "tinh_pt", "RESOLVED", new Date())
+        issueDAO.update(dummyIssueRecord).get must throwAn[Exception]
+      }
+    }
+
+    "add" should {
+      "return new issue record if success" in new AutoRollback {
+        val dummyIssueRecord = IssueRecord(2, "ddd is difficult", "learn more", "tinh_pt", "RESOLVED", new Date())
+        val newIssue = issueDAO.add(dummyIssueRecord).get
+
+        newIssue.assignee mustEqual ("tinh_pt")
+        newIssue.content mustEqual ("ddd is difficult")
+        newIssue.action mustEqual ("learn more")
+        newIssue.status mustEqual ("RESOLVED")
       }
     }
   }
+
 }
 
 trait AutoRollbackWithFixture extends AutoRollback {

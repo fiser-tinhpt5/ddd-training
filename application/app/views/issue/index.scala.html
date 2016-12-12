@@ -1,8 +1,11 @@
 @import model.issue.Issue
 
-@(issues: Seq[Issue])
+@(issues: Seq[Issue])(implicit flash: Flash)
 
 @main("List of Issues") {
+    @flash.get("create_success").map { message =>
+        <div class="text-center text-success">@message</div>
+    }
   <div style="margin-top: 50px">
     <div class="row">
       <div class="col-sm-6">
@@ -13,25 +16,36 @@
       <table class="table table-hover table-bordered">
         <thead id="table-header">
           <tr>
-            <td>No</td>
-            <td>Content</td>
-            <td>Action</td>
-            <td>Assignee</td>
-            <td>Status</td>
-            <td>Deadline</td>
+            <td style="width:5%">No</td>
+            <td style="width:30%">Content</td>
+            <td style="width:30%">Action</td>
+            <td style="width:10%">Assignee</td>
+            <td style="width:15%">Status</td>
+            <td style="width:10%">Deadline</td>
           </tr>
         </thead>
         <tbody>
-          @for(index <- 0 to issues.length - 1) {
-            <tr id="@issues(index).id.id" onclick="viewIssueDetail(@issues(index).id.id)">
-              <td>@(index + 1)</td>
-              <td>@issues(index).content</td>
-              <td>@issues(index).action</td>
-              <td>@issues(index).assignee</td>
-              <td>@issues(index).status.status</td>
-              <td>@issues(index).deadline</td>
-            </tr>
+          @for(issue <- issues) {
+
+              <tr id="@issue.id.id">
+                <td>@issue.id.id</td>
+                <td>@issue.content</td>
+                <td>@issue.action</td>
+                <td>@issue.assignee</td>
+                <td>
+                  <form action="/issues/@issue.id.id" id="form-edit-@issue.id.id">
+                    <select class="form-control" name="status" id="status" onchange="update(@issue.id.id)">
+                      <option value="PENDING" @if(issue.status.status.equals("PENDING")){ selected="selected" }>PENDING</option>
+                      <option value="RESOLVED" @if(issue.status.status.equals("RESOLVED")){ selected="selected" }>RESOLVED</option>
+                      <option value="CANCELLED" @if(issue.status.status.equals("CANCELLED")){ selected="selected" }>CANCELLED</option>
+                    </select>
+                  </form>
+                </td>
+                <td>@issue.deadline</td>
+              </tr>
+
           }
+
           @if(issues.length == 0) {
             <tr>
               <td colspan="6">No issue</td>
@@ -40,5 +54,7 @@
         </tbody>
       </table>
     </div>
+
+    <a href="/issues" class="btn btn-primary">Create new issue</a>
   </div>
 }

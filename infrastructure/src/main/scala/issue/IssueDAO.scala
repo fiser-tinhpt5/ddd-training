@@ -19,10 +19,24 @@ class IssueDAO {
     }
   }
 
-  def update(issueRecord: IssueRecord)(implicit session: DBSession = AutoSession): Try[Int] = Try {
+  def update(issueRecord: IssueRecord)(implicit session: DBSession = AutoSession): Try[IssueRecord] = Try {
     IssueRecord.updateById(issueRecord.id)
       .withAttributes(
         'status -> issueRecord.status
       )
+
+    resolveById(issueRecord.id).get
+  }
+
+  def add(issueRecord: IssueRecord)(implicit session: DBSession = AutoSession): Try[IssueRecord] = Try {
+    val newIssueID = IssueRecord.createWithAttributes(
+      'content -> issueRecord.content,
+      'action -> issueRecord.action,
+      'assignee -> issueRecord.assignee,
+      'status -> issueRecord.status,
+      'deadline -> issueRecord.deadline
+    )
+
+    resolveById(newIssueID).get
   }
 }

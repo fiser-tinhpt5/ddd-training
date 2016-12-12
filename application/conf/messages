@@ -1,0 +1,3 @@
+create.issue.success = Create new issue successfully
+form.field.required = {0} can not be blank
+form.field.maxlength = Max length of {0} is {1}
